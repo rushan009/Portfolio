@@ -1,21 +1,8 @@
 import multer from "multer";
-import fs from "fs";
-import path from "path";
-
-const uploadDir = path.resolve("uploads");
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    cb(null, `${Date.now()}-${file.fieldname}${extension}`);
-  },
-});
 
 const resumeUpload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024 }, // 4MB, see note below
   fileFilter: (req, file, cb) => {
     if (file.mimetype === "application/pdf") {
       cb(null, true);

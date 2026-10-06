@@ -1,4 +1,3 @@
-import fs from "fs/promises";
 import Resume from "../models/resume.mode.js";
 
 export const uploadResume = async (req, res) => {
@@ -7,22 +6,16 @@ export const uploadResume = async (req, res) => {
 			return res.status(400).json({ message: "Resume file is required" });
 		}
 
-		const existingResume = await Resume.findOne();
 		const resume = await Resume.findOneAndUpdate(
 			{},
 			{
 				originalName: req.file.originalname,
-				filename: req.file.filename,
-				path: req.file.path,
 				mimetype: req.file.mimetype,
 				size: req.file.size,
+				data: req.file.buffer,
 			},
 			{ new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
 		);
-
-		if (existingResume?.path && existingResume.path !== req.file.path) {
-			await fs.unlink(existingResume.path).catch(() => undefined);
-		}
 
 		return res.status(201).json({
 			message: "Resume uploaded successfully",
@@ -33,10 +26,6 @@ export const uploadResume = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		if (req.file?.path) {
-			await fs.unlink(req.file.path).catch(() => undefined);
-		}
-
 		console.error("Error uploading resume:", error);
 		return res.status(500).json({
 			message: "Error uploading resume",
@@ -68,11 +57,9 @@ export const downloadResume = async (req, res) => {
 			return res.status(404).json({ message: "Resume not found" });
 		}
 
-		return res.download(resume.path, resume.originalName, (error) => {
-			if (error && !res.headersSent) {
-				res.status(404).json({ message: "Resume file not found" });
-			}
-		});
+		res.attachment(resume.originalName);
+		res.set("Content-Type", resume.mimetype);
+		return res.send(resume.data);
 	} catch (error) {
 		console.error("Error downloading resume:", error);
 		return res.status(500).json({ message: "Error downloading resume" });
