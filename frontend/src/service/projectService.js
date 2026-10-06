@@ -1,9 +1,5 @@
-import axios from 'axios'
-const api = axios.create({
-    baseURL: "http://localhost:8000",
-    withCredentials: true,
-});
- 
+import api from "./api";
+
 export const uploadProjectService = async (formData) => {
     const form = new FormData();
     form.append("title", formData.title);
@@ -15,15 +11,10 @@ export const uploadProjectService = async (formData) => {
         form.append("live", formData.live);
     }
     form.append("image", formData.image);
- 
-    const response = await api.post("/api/project", form, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
+
+    const response = await api.post("/api/project", form);
     return response.data;
 };
-
 
 export const getProjectsService = async () => {
     const response = await api.get("/api/project");
