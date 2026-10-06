@@ -19,6 +19,7 @@ const allowedOrigins = [
     "http://localhost:5173",
     "https://rushandahal.com.np",
     "https://www.rushandahal.com.np",
+    "https://portfolio-fhgy.vercel.app",
     process.env.FRONTEND_URL,
 ].filter(Boolean);
 
