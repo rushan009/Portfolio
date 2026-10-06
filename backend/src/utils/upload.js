@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -7,22 +6,17 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-console.log("Cloudinary config check:", cloudinary.config());
-
-const uploadImage = async (filePath) => {
-    try {
-        const result = await cloudinary.uploader.upload(filePath, {
-            folder: "portfolio",
-        });
-        fs.unlink(filePath, (err) => {
-            if (err) console.error("Failed to delete local temp file:", err);
-        });
-        return result.secure_url;
-    } catch (error) {
-        console.error("Error uploading image to Cloudinary:", error);
-        fs.unlink(filePath, () => {});
-        throw new Error("Image upload failed");
-    }
-};
+const uploadImage = (buffer) =>
+    new Promise((resolve, reject) => {
+        cloudinary.uploader
+            .upload_stream({ folder: "portfolio" }, (error, result) => {
+                if (error) {
+                    console.error("Error uploading image to Cloudinary:", error);
+                    return reject(new Error("Image upload failed"));
+                }
+                resolve(result.secure_url);
+            })
+            .end(buffer);
+    });
 
 export default uploadImage;
