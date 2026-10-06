@@ -17,6 +17,10 @@ app.use(cors({
     credentials: true,
 }))
 
+app.get("/", (req, res) => {
+    res.json({ message: "Portfolio API is running" });
+});
+
 app.use('/api/auth', authRouter)
 app.use('/api', projectRouter)
 app.use('/api', skillRouter)
